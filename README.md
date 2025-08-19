@@ -17,20 +17,3 @@ The Target-Embedded Harness used by BCDFuzz is implemented as a set of shellcode
 The EDK2 compilation process hardcodes the address of the global Boot Services table pointer (`gBS`) within the generated shellcode. When this shellcode is relocated to a new base address inside the patched `bootmgfw.efi`, this hardcoded pointer becomes invalid, and the harness will fail.
 
 Therefore, after patching the shellcodes into `bootmgfw.efi`, you **must manually update** the `gBS` pointer address within the shellcode to match the correct address used by the target `bootmgfw.efi` binary.
-
-## Example Fuzzing Command
-
-The following command provides a template for starting a fuzzing campaign with kAFL, using the patched bootloader and a generated seed corpus.
-
-```bash
-kafl fuzz \
-  --bios /path/to/OVMF.fd \
-  --qemu-base "-enable-kvm -machine kAFL64-v1 -net nic -net tap,ifname=tap0,script=no -cpu kAFL64-Hypervisor-v1,+vmx,+rdrand,+rdseed -no-reboot" \
-  --qemu-extra="-drive file=/path/to/empty.img,index=0,media=disk -debugcon file:debug.log -global isa-debugcon.iobase=0x402" \
-  --work-dir /dev/shm/kafl_uefi \
-  --seed-dir /path/to/corpus \
-  -m 4096 \
-  --redqueen \
-  --grimoire \
-  --trace-cb \
-  -v
